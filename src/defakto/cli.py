@@ -8,7 +8,7 @@ import typer
 from defakto import __version__
 
 app = typer.Typer(
-    help="Open-source deepfake detection toolkit from Forensiqa.",
+    help="Open-source toolkit for detecting AI-generated and unreliable content, from Forensiqa.",
     no_args_is_help=True,
     add_completion=False,
 )
@@ -33,4 +33,4 @@ def main(
         ),
     ] = False,
 ) -> None:
-    """Open-source deepfake detection toolkit from Forensiqa."""
+    """Open-source toolkit for detecting AI-generated and unreliable content, from Forensiqa."""

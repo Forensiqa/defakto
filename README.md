@@ -1,6 +1,6 @@
 # Defakto
 
-An open-source deepfake detection toolkit from [Forensiqa](https://forensiqa.com).
+An open-source toolkit from [Forensiqa](https://forensiqa.com) for detecting AI-generated and unreliable content: deepfake media, and hallucinated or unsafe LLM responses.
 
 ## Install
 

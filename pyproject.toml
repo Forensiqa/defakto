@@ -1,14 +1,14 @@
 [project]
 name = "defakto"
 version = "0.0.1"
-description = "Open-source deepfake detection toolkit from Forensiqa. Early development."
+description = "Open-source toolkit for detecting AI-generated and unreliable content, from Forensiqa. Early development."
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 requires-python = ">=3.12"
 authors = [{ name = "Forensiqa" }]
 dependencies = ["typer>=0.27"]
-keywords = ["deepfake", "deepfake detection", "media forensics", "synthetic media", "dynamical systems"]
+keywords = ["deepfake detection", "ai-generated content", "hallucination detection", "llm safety", "media forensics", "dynamical systems"]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Developers",
