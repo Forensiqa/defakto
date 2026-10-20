@@ -1,0 +1,50 @@
+[project]
+name = "defakto"
+version = "0.0.1"
+description = "Open-source deepfake detection toolkit from Forensiqa. Early development."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+authors = [{ name = "Forensiqa" }]
+dependencies = ["typer>=0.27"]
+keywords = ["deepfake", "deepfake detection", "media forensics", "synthetic media", "dynamical systems"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Security",
+  "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://forensiqa.com"
+Repository = "https://github.com/Forensiqa/defakto"
+Issues = "https://github.com/Forensiqa/defakto/issues"
+
+[project.scripts]
+defakto = "defakto.cli:app"
+
+[dependency-groups]
+dev = ["pre-commit>=4", "pytest>=8", "ruff>=0.17", "ty>=0.0.90"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[build-system]
+requires = ["uv_build>=0.9.7,<0.10.0"]
+build-backend = "uv_build"
