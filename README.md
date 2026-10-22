@@ -16,7 +16,7 @@ Requires Python 3.12 or later. The `text` extra installs PyTorch and Transformer
 
 ## Usage
 
-Detection runs with **artifacts**: fitted models for one media type and one task, for example unsafe content in English text. Each artifact names the encoder it was fitted with, and defakto builds that encoder for you. The first run downloads the artifact and its embedding model; both are cached afterwards.
+Detection runs with **artifacts**: fitted models for one media type and one task, for example unsafe generated content. Each artifact names the encoder it was fitted with, and defakto builds that encoder for you. The first run downloads the artifact and its embedding model; both are cached afterwards.
 
 ### From Python
 
