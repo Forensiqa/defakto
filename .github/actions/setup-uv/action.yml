@@ -1,0 +1,26 @@
+name: Set up uv
+description: Install the canonical uv version used by GitHub Actions
+
+inputs:
+  version:
+    description: uv version to install
+    required: false
+    default: "0.13.5"
+  enable-cache:
+    description: Enable the uv cache
+    required: false
+    default: "true"
+  cache-suffix:
+    description: Additional cache key suffix
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+      with:
+        version: ${{ inputs.version }}
+        enable-cache: ${{ inputs.enable-cache }}
+        cache-dependency-glob: uv.lock
+        cache-suffix: ${{ inputs.cache-suffix }}

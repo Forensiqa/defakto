@@ -10,13 +10,19 @@ hold the fitted models, one per media type and task.
 Developed by Forensiqa.
 """
 
+from importlib.metadata import PackageNotFoundError, version
+
 from defakto.analyzer import Analyzer, analyze, load_detector_config
 from defakto.artifacts import Artifact, load_artifact
 from defakto.detector import Detector
 from defakto.results import Result, Segment
 from defakto.trajectory import Step, Trajectory
 
-__version__ = "0.0.1"
+# The version lives only in pyproject.toml; this reads it from the installed package.
+try:
+    __version__ = version("defakto")
+except PackageNotFoundError:  # running from a source checkout that isn't installed
+    __version__ = "0.0.0+unknown"
 __all__ = [
     "Analyzer",
     "Artifact",

@@ -1,0 +1,57 @@
+name: Reusable Tests
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        description: "Operating system name"
+        required: true
+        default: Ubuntu
+        type: string
+      image:
+        description: "Runner image"
+        required: true
+        default: ubuntu-latest
+        type: string
+      python-version:
+        description: "Python version to test against"
+        required: true
+        default: "3.12"
+        type: string
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  tests:
+    name: ${{ inputs.os }} / Python ${{ inputs.python-version }}
+    runs-on: ${{ inputs.image }}
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python ${{ inputs.python-version }}
+        uses: actions/setup-python@v7.1.0
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install uv
+        uses: $/.github/actions/setup-uv
+        with:
+          cache-suffix: ${{ inputs.python-version }}
+
+      - name: Check lock file
+        run: uv lock --check
+
+      # No extras: the tests use a fake encoder, so torch isn't needed.
+      - name: Install dependencies
+        run: uv sync --locked --group dev
+
+      - name: Run pytest
+        run: uv run pytest -v
