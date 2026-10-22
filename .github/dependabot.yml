@@ -1,0 +1,13 @@
+# Actions are pinned to exact commits, which never update on their own.
+# Dependabot opens a pull request when a newer release comes out.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns: ["*"]
