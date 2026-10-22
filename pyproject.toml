@@ -1,6 +1,6 @@
 [project]
 name = "defakto"
-version = "0.0.1"
+version = "0.1.0"
 description = "Open-source toolkit for detecting AI-generated and unreliable content, from Forensiqa. Early development."
 readme = "README.md"
 license = "Apache-2.0"
@@ -33,6 +33,7 @@ classifiers = [
 Homepage = "https://forensiqa.com"
 Repository = "https://github.com/Forensiqa/defakto"
 Issues = "https://github.com/Forensiqa/defakto/issues"
+Changelog = "https://github.com/Forensiqa/defakto/blob/main/CHANGELOG.md"
 
 [project.scripts]
 defakto = "defakto.cli:app"
