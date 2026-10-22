@@ -91,4 +91,4 @@ uv run pytest
 
 ## License
 
-Apache License 2.0. See [LICENSE](LICENSE).
+Apache License 2.0. See [LICENSE](https://github.com/Forensiqa/defakto/blob/main/LICENSE).
