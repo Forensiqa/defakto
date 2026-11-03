@@ -5,5 +5,13 @@
 
 from defakto.artifacts.loader import Artifact, load_artifact, resolve_artifact_dir
 from defakto.artifacts.manifest import EncoderSpec, Manifest
+from defakto.artifacts.writer import save_artifact
 
-__all__ = ["Artifact", "EncoderSpec", "Manifest", "load_artifact", "resolve_artifact_dir"]
+__all__ = [
+    "Artifact",
+    "EncoderSpec",
+    "Manifest",
+    "load_artifact",
+    "resolve_artifact_dir",
+    "save_artifact",
+]
