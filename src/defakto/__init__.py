@@ -15,6 +15,7 @@ from importlib.metadata import PackageNotFoundError, version
 from defakto.analyzer import Analyzer, analyze, load_detector_config
 from defakto.artifacts import Artifact, load_artifact
 from defakto.detector import Detector
+from defakto.fitting import FitResult, fit
 from defakto.results import Result, Segment
 from defakto.trajectory import Step, Trajectory
 
@@ -27,12 +28,14 @@ __all__ = [
     "Analyzer",
     "Artifact",
     "Detector",
+    "FitResult",
     "Result",
     "Segment",
     "Step",
     "Trajectory",
     "__version__",
     "analyze",
+    "fit",
     "load_artifact",
     "load_detector_config",
 ]
