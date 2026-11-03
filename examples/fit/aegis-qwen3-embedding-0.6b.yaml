@@ -1,0 +1,44 @@
+# Fit a text-safety artifact on NVIDIA's Aegis 2.0, with Qwen3-Embedding-0.6B.
+#
+#   defakto fit examples/fit/aegis-qwen3-embedding-0.6b.yaml -o my-artifact --work-dir .fit-cache
+#
+# Needs: pip install "defakto[text,fit]"
+# Encoding is the slow part; --work-dir keeps the encoded examples, so a second run
+# (for example with other dimensions) skips it.
+
+artifact:
+  id: my-org/text-safety-qwen3-embedding-0.6b
+  version: 0.1.0
+  task: safety
+  labels:
+    positive: unsafe
+    negative: safe
+  min_steps: 5
+
+# Same format as an artifact manifest's encoder section. An empty model_revision is
+# pinned to the model's current commit when fitting starts.
+encoder:
+  type: hf-token-embeddings
+  model_name: Qwen/Qwen3-Embedding-0.6B
+  model_revision: null
+  max_length: 512
+  strip_special_tokens: true
+  dtype: float32
+  trust_remote_code: true
+
+# 40 lift modes, 500 observable modes.
+dimensions:
+  lift_modes: 40
+  observable_modes: 500
+
+data:
+  dataset: nvidia/Aegis-AI-Content-Safety-Dataset-2.0
+  revision: null          # pinned to the current commit when fitting starts
+  text_column: response   # rows without a response are skipped
+  label_column: response_label
+  positive: unsafe
+  splits:
+    train: train          # fit the operators
+    validation: validation  # choose the threshold
+    test: test            # report metrics only
+  limit: null             # cap on training examples
