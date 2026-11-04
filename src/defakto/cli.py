@@ -3,6 +3,8 @@
 
 import json
 import sys
+import tempfile
+from dataclasses import asdict
 from enum import StrEnum
 from pathlib import Path
 from typing import Annotated, NoReturn
@@ -11,7 +13,11 @@ import typer
 
 from defakto import __version__
 from defakto.analyzer import Analyzer, load_detector_config
+from defakto.encoders import Encoder, build_encoder
 from defakto.errors import DefaktoError
+from defakto.fitting import TrajectoryStore
+from defakto.fitting import fit as fit_artifact
+from defakto.fitting.config import FitConfig, load_examples, pin_revisions
 from defakto.results import Result
 
 app = typer.Typer(
@@ -117,6 +123,99 @@ def analyze(
         return
     for result in results:
         _print_result(result, show)
+
+
+@app.command()
+def fit(
+    config: Annotated[
+        Path,
+        typer.Argument(
+            help="YAML file describing the artifact, its encoder and its data.",
+            exists=True,
+            dir_okay=False,
+        ),
+    ],
+    output: Annotated[
+        Path, typer.Option("--output", "-o", help="Folder to write the artifact to.")
+    ],
+    work_dir: Annotated[
+        Path | None,
+        typer.Option(
+            help="Folder to keep encoded examples in. A later run with the same encoder and "
+            "data reuses them instead of encoding again."
+        ),
+    ] = None,
+    device: Annotated[
+        str | None, typer.Option(help="Device for encoding and fitting, for example cpu or cuda.")
+    ] = None,
+    force: Annotated[
+        bool, typer.Option("--force", help="Overwrite an artifact already in the output folder.")
+    ] = False,
+) -> None:
+    """Fit an artifact from a labeled Hugging Face dataset."""
+    if (output / "manifest.yaml").exists() and not force:
+        _fail(f"'{output}' already holds an artifact. Use --force to overwrite it.")
+
+    try:
+        cfg = pin_revisions(FitConfig.load(config))
+        data = cfg.data
+        with tempfile.TemporaryDirectory(prefix="defakto-fit-") as temp_dir:
+            root = work_dir or Path(temp_dir)
+            encoders: list[Encoder] = []
+            stores: dict[str, TrajectoryStore] = {}
+            for split in data.splits:
+                meta = {"encoder": cfg.encoder_raw, "source": data.source(split)}
+                store = TrajectoryStore.open_if_current(root / split, meta)
+                if store is not None:
+                    typer.echo(f"Reusing encoded {split} examples from {root / split}")
+                else:
+                    examples = load_examples(data, split)
+                    if not encoders:
+                        encoders.append(build_encoder(cfg.encoder, device=device))
+                    with typer.progressbar(length=len(examples), label=f"Encoding {split}") as bar:
+                        store = TrajectoryStore.encode(
+                            root / split,
+                            encoders[0],
+                            examples,
+                            meta=meta,
+                            on_progress=lambda _: bar.update(1),
+                        )
+                stores[split] = store
+                typer.echo(
+                    f"{split}: {store.num_positive} {cfg.positive_label}, "
+                    f"{store.num_negative} {cfg.negative_label}"
+                )
+
+            typer.echo("Fitting…")
+            result = fit_artifact(
+                stores["train"],
+                encoder=cfg.encoder,
+                output=output,
+                artifact_id=cfg.artifact_id,
+                validation=stores.get("validation"),
+                test=stores.get("test"),
+                positive_label=cfg.positive_label,
+                negative_label=cfg.negative_label,
+                task=cfg.task,
+                version=cfg.version,
+                lift_modes=cfg.lift_modes,
+                observable_modes=cfg.observable_modes,
+                min_steps=cfg.min_steps,
+                device=device,
+                training_metadata={"data": asdict(data)},
+            )
+    except (DefaktoError, FileNotFoundError, ValueError) as e:
+        _fail(str(e))
+
+    typer.echo(f"\nWrote {result.artifact.manifest.id} to {output}")
+    typer.echo(f"  threshold {result.threshold:+.4f}")
+    for name, metrics in (("validation", result.validation), ("test", result.test)):
+        for m in metrics:
+            typer.echo(
+                f"  {name:<10} steps ≥ {m.min_steps:<3}  n {m.count:<5}  "
+                f"balanced acc {m.balanced_accuracy:.3f}  acc {m.accuracy:.3f}  "
+                f"TPR {m.tpr:.3f}  FPR {m.fpr:.3f}  AUC {m.auc:.3f}"
+            )
 
 
 def _print_result(result: Result, show: Show) -> None:

@@ -12,7 +12,7 @@ Defakto uses one method for every media type: an encoder turns the input into a 
 pip install "defakto[text]"
 ```
 
-Requires Python 3.12 or later. The `text` extra installs PyTorch and Transformers for text analysis.
+Requires Python 3.12 or later. The `text` extra installs PyTorch and Transformers for text analysis. To [fit your own artifacts](#fit-your-own-artifacts) on text, install `defakto[text,fit]`.
 
 ## Usage
 
@@ -80,6 +80,88 @@ Defakto checks the checksum and dimensions before using an artifact. Official ar
 | `Forensiqa/text-safety-qwen3-embedding-0.6b` | unsafe content in text | `Qwen/Qwen3-Embedding-0.6B` |
 
 Add `@revision` (a tag or commit) to pin an exact version, for example `Forensiqa/text-safety-jina-v2-base@v0.1.0`. Local artifact folders work too: pass the folder's path instead of a Hub id.
+
+## Fit your own artifacts
+
+You can fit an artifact on your own labeled data. Each example is either in the class the artifact flags (positive) or not. Fitting learns one operator per class.
+
+### From Python
+
+`defakto.fit()` takes `(content, positive)` pairs from any source:
+
+```python
+import defakto
+
+train = [
+    ("A response that should be flagged...", True),
+    ("A response that shouldn't be flagged...", False),
+    # ...
+]
+
+result = defakto.fit(
+    train,
+    validation=validation,  # pairs like train, used to choose the threshold
+    test=test,  # pairs like train, for eval
+    encoder={
+        "type": "hf-token-embeddings",
+        "model_name": "jinaai/jina-embeddings-v2-base-en",
+        "max_length": 512,
+        "strip_special_tokens": True,
+        "dtype": "float32",
+        "trust_remote_code": True,
+    },
+    output="my-artifact",
+    artifact_id="my-org/my-artifact",
+    positive_label="unsafe",
+    negative_label="safe",
+)
+print(result.threshold, result.test[0].auc)
+
+defakto.analyze("A new response...", artifacts=["my-artifact"])
+```
+
+The threshold is the one with the best balanced accuracy on `validation`. Without validation data it is 0, where both operators predict equally well. `test` plays no part in any choice, so its metrics estimate how the artifact does on unseen data.
+
+### From the command line
+
+`defakto fit` reads a labeled dataset from the Hugging Face Hub, described in a YAML file. For local data, use `defakto.fit()`.
+
+```yaml
+# fit.yaml
+artifact:
+  id: my-org/text-safety-jina-v2-base
+  task: safety
+  labels:
+    positive: unsafe
+    negative: safe
+
+encoder:
+  type: hf-token-embeddings
+  model_name: jinaai/jina-embeddings-v2-base-en
+  max_length: 512
+  strip_special_tokens: true
+  dtype: float32
+  trust_remote_code: true
+
+data:
+  dataset: nvidia/Aegis-AI-Content-Safety-Dataset-2.0
+  text_column: response
+  label_column: response_label
+  positive: unsafe        # this label is the flagged class; any other label is not
+  splits:
+    train: train
+    validation: validation
+    test: test
+```
+
+```
+defakto fit fit.yaml -o my-artifact --work-dir .fit-cache
+```
+
+Complete configs are in [`examples/fit`](https://github.com/Forensiqa/defakto/tree/main/examples/fit).
+
+The dataset and the encoder's model are pinned to their current Hub commits when fitting starts. The artifact's manifest records them, along with the defakto version, the date, the example counts and the metrics.
+
 
 ## Development
 

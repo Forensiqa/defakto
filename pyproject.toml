@@ -40,6 +40,7 @@ defakto = "defakto.cli:app"
 
 [project.optional-dependencies]
 text = ["torch>=2.4", "transformers>=4.57,<5"]
+fit = ["torch>=2.4", "datasets>=3"]
 
 [dependency-groups]
 dev = ["pre-commit>=4", "pytest>=8", "ruff>=0.17", "ty>=0.0.90"]
